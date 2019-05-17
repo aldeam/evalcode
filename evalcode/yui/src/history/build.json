@@ -1,0 +1,10 @@
+{
+    "name": "moodle-mod_evalcode-history",
+    "builds": {
+        "moodle-mod_evalcode-history": {
+            "jsfiles": [
+                "history.js"
+            ]
+        }
+    }
+}

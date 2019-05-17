@@ -1,0 +1,8 @@
+{
+    "moodle-mod_evalcode-history": {
+        "requires": [
+            "node",
+            "transition"
+        ]
+    }
+}
