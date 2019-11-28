@@ -6,15 +6,15 @@
 
 /**
  * This is the function called when a student clicks the 'Submit' button
- * @param $path Is the temporal path in wich your function will operate, it contains 
+ * @param $path Is the temporal path in wich your function will operate, it contains
  *      the student submission and your evaluation files.
  * @param $returndata Is a generic class to specify the grade and the feedback comment.
  *      It's the only thing that this function should return.
  * @param $additionalParams This is a string containing all the additional information
  *      you've provided during the creation of your EvalCode activity.
- * 
+ *
  * @return $returndata Data class containing the grade and the feedback comment.
- * 
+ *
  * @throws NothingHere This is the example error to show how you sould use it. All
  *      the errors this function generates are treated and shown to the student in the
  *      sumbission comment box.
@@ -30,7 +30,7 @@ $evaluatefunc = function ($path,$returndata,$additionalParams){
     $testClassFileName = str_replace("/", ".", $testClassFileName);
 
     $contents = file_get_contents('sources_list.txt');
-    
+
     //En la compilacion se añaden al classpath todas las librerias externas que haya en /var/www/
     $comand2 = 'javac -Xlint:unchecked -encoding UTF-8 -cp .:/var/www/* @sources_list.txt 2>&1';
     $salida = shell_exec($comand2);
@@ -53,17 +53,17 @@ $evaluatefunc = function ($path,$returndata,$additionalParams){
     }else{
         preg_match('/^.*(?:Tests run:).*$(?:\r\n|\n)?/m',$junitResult,$totalTest);
         //echo '###'.$totalTest[0];
-        
+
         $countTotalTest = str_replace('Tests run: ','',explode(',',$totalTest[0])[0]);
         $countFailureTest = str_replace('  Failures: ','',explode(',',$totalTest[0])[1]);
     }
-    
+
     if (intval($countFailureTest)>0) {
 
-        if (intval($countFailureTest) > intval($additionalParams)) {
+        if (intval($countFailureTest) > (intval($countTotalTest)-intval($additionalParams))) {
             $grade = 10 *((intval($countTotalTest)-intval($countFailureTest)) * 5 / intval($additionalParams));
         } else {
-            $grade = 10 *(intval($countTotalTest)-intval($countFailureTest)) * 10 / intval($countTotalTest);
+            $grade = 100-((50/(intval($countTotalTest)-intval($additionalParams)))*((intval($countTotalTest))-(intval($countTotalTest)-intval($countFailureTest))));
         }
     }else{
 
