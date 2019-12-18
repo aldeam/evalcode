@@ -657,7 +657,7 @@ class evalcode
         //$update->percentagequality = $formdata->percentageQuality;
         //$update->selectedtools = 'prueba 123';
         $xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?><selected_tools>";
-        $dirs = array_filter(glob($CFG->dirroot . '/mod/evalcode/languageConfig/*'), 'is_dir'); 
+        $dirs = array_filter(glob($CFG->dirroot . '/mod/evalcode/languageConfig/*'), 'is_dir');
         foreach($dirs as $dir){
             $lan = explode("/",$dir);
             $tooldirs = array_filter(glob($dir.'/*'), 'is_dir');
@@ -674,9 +674,9 @@ class evalcode
                     }
                     echo 'Readed '.$prop;
                 }
-                
+
             }
-            
+
         }
         $xml =$xml."</selected_tools>";
         $update->selectedtools = $xml;
@@ -1076,7 +1076,7 @@ class evalcode
         //$update->percentagequality = $formdata->percentageQuality;
         //$update->selectedtools = 'prueba 1234';
         $xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?><selected_tools>";
-        $dirs = array_filter(glob($CFG->dirroot . '/mod/evalcode/languageConfig/*'), 'is_dir'); 
+        $dirs = array_filter(glob($CFG->dirroot . '/mod/evalcode/languageConfig/*'), 'is_dir');
         foreach($dirs as $dir){
             $lan = explode("/",$dir);
             $tooldirs = array_filter(glob($dir.'/*'), 'is_dir');
@@ -1093,15 +1093,15 @@ class evalcode
                     }
                     echo 'Readed '.$prop;
                 }
-                
+
             }
-            
+
         }
         $xml =$xml."</selected_tools>";
         echo htmlentities($xml);
         $update->selectedtools = $xml;
         /*
-        $dirs = array_filter(glob($CFG->dirroot . '/mod/evalcode/languageConfig/*'), 'is_dir'); 
+        $dirs = array_filter(glob($CFG->dirroot . '/mod/evalcode/languageConfig/*'), 'is_dir');
         foreach($dirs as $dir){
             $lan = explode("/",$dir);
             $tooldirs = array_filter(glob($dir.'/*'), 'is_dir');
@@ -1113,9 +1113,9 @@ class evalcode
                     $update->$prop = $formdata->$prop;
                     echo 'Readed '.$prop;
                 }
-                
+
             }
-            
+
         }
         */
 
@@ -6803,7 +6803,7 @@ class evalcode
             //echo $path . "/languageConfig/".$tool->language.'/'.$tool->name.'/evaluate.php';
             if (file_exists($path . "/languageConfig/".$tool->language.'/'.$tool->name.'/evaluate.php')) {
                 require_once($path . "/languageConfig/".$tool->language.'/'.$tool->name.'/evaluate.php');
-                
+
                 // Include submission form.
                 require_once($CFG->dirroot . '/mod/evalcode/externallib.php');
                 require_once($CFG->dirroot . '/mod/evalcode/submission_form.php');
@@ -6815,7 +6815,7 @@ class evalcode
                     $notices[] = get_string('duedatereached', 'evalcode');
                     return false;
                 }
-                
+
                 //Save the submmited data
                 $data = new stdClass();
                 $data->userid = $userid;
@@ -6835,18 +6835,13 @@ class evalcode
                 $context = $this->get_context();
                 //Download from de db the user submission files
                 $submission = $this->get_user_submission($userid, false);
-                //If there are not any files at all, return false TODO mensaje de error
-                if (empty($submission))
-                {
-                    return false;
-                }
                 $data = new stdClass();
                 $data->userid = $userid;
                 $mform = new mod_eval_submission_form(null, array($this, $data));
                 if ($mform->is_cancelled()) {
                     return true;
                 }
-                
+
                 if ($data = $mform->get_data()) {
                     if($firstTool){
                         $this->save_submission($data, $notices);
@@ -6855,6 +6850,11 @@ class evalcode
                     //Set the current path to this one created
                     chdir($path);
                     $files = $fs->get_area_files($context->id, 'evalsubmission_file', EVALSUBMISSION_FILE_FILEAREA, $submission->id);
+                    //If the submission is empty stays in the submission page and shows a messagge
+                    if (sizeof(array_values($files))==1)
+                    {   
+                        return false;
+                    }
                     //Take from the second value of the submission (the zip archive)
                     //  get_area_files returns all the submission files and a "." in [0]
                     $f = array_values($files)[1];
@@ -6889,7 +6889,7 @@ class evalcode
                         $auxGrade = $auxGrade+($result->grade * (intval($tool->percentage)/100));
                         //save the feedback
                         $feedback = $feedback."<br><h5><b>-".$tool->name." (".$tool->percentage."%) feedback comment:</b></h5><br>".$result->feedbackcomment."<br>";
-                    
+
                     } catch (Exception $e) {
                         //$notices[] = "Error during evaluate func.".$e->getMessage();
                         //return false;
@@ -6898,7 +6898,7 @@ class evalcode
                     }
 
                     unset($evaluatefunc);
-                    
+
                 }//download finished
                 //remove temp dir TODO: uncomment this
                 if ($this->tempPath != "") {
@@ -6911,7 +6911,7 @@ class evalcode
         $elemName = "files_" . $userid . "_filemanager";
         $fs = get_file_storage();
         $context = context_user::instance($userid);
-        
+
 
         $data = new stdClass();
         $data->grade = $auxGrade;
@@ -6937,7 +6937,7 @@ class evalcode
         return TRUE;
     }
 
-    
+
 
     //NOTA aqui estaban todos los metodos que ahora estan en JavaConfig
 
