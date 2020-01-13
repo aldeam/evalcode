@@ -47,7 +47,7 @@ class mod_evalcode_mod_form extends moodleform_mod
 
         $mform->addElement('static','tituloseccion','Select tools to evaluate:');
         //get list of language dirs
-        $dirs = array_filter(glob($CFG->dirroot . '/mod/evalcode/languageConfig/*'), 'is_dir'); 
+        $dirs = array_filter(glob($CFG->dirroot . '/mod/evalcode/tools/*'), 'is_dir'); 
         //create aux arrays
         $languages = array();
         
