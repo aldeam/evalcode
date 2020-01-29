@@ -65,6 +65,13 @@ define('EVALCODE_MARKING_WORKFLOW_STATE_RELEASED', 'released');
 define('EVALCODE_INTROATTACHMENT_FILEAREA', 'introattachment');
 define('EVALCODE_INTROATTACHMENT_JUNIT', 'introattachmentjunit');
 
+//Location of the error_log file
+define('EVALCODE_LOG_FILE', '/var/www/moodledata/temp/filestorage/evalcode.log');
+
+//Constant to activate emails false is off. Defined to avoid an error
+define('EVALCODE_EMAILS', false);
+
+
 require_once($CFG->libdir . '/accesslib.php');
 require_once($CFG->libdir . '/formslib.php');
 require_once($CFG->dirroot . '/repository/lib.php');
@@ -79,8 +86,6 @@ require_once($CFG->libdir . '/eventslib.php');
 require_once($CFG->libdir . '/portfolio/caller.php');
 //Language config scripts
 require_once($CFG->dirroot . '/mod/evalcode/tools/JavaConfig.php');
-
-
 
 use \mod_evalcode\output\grading_app;
 
@@ -164,6 +169,8 @@ class evalcode
     private $sharedgroupmembers = array();
 
     private $tempPath = "";
+    
+    
 
     /**
      * Constructor for the base evalcode class.
@@ -782,7 +789,7 @@ class evalcode
      */
     public function delete_instance()
     {
-        error_log("Delete locallib.php \n", 3, "/var/www/moodledata/temp/filestorage/evalcode.log");
+        error_log("Delete locallib.php \n", 3, EVALCODE_LOG_FILE);
         global $DB;
         $result = true;
 
@@ -5680,8 +5687,8 @@ class evalcode
                 $coursemodule,
                 $evalcodeframeworkname);
         }
-
-        $eventdata = new stdClass();
+        //$eventdata = new stdClass();
+        $eventdata = new \core\message\message();
         $eventdata->modulename = 'evalcode';
         $eventdata->userfrom = $userfrom;
         $eventdata->userto = $userto;
@@ -5696,9 +5703,14 @@ class evalcode
         $eventdata->notification = 1;
         $eventdata->contexturl = $info->url;
         $eventdata->contexturlname = $info->evalcodeframework;
-
-        message_send($eventdata);
-    }
+		
+		//Fixes error when calling message
+		$eventdata->courseid = SITEID;
+		
+		if(EVALCODE_EMAILS){
+			message_send($eventdata);
+		}
+	}
 
     /**
      * Message someone about something.
@@ -6080,8 +6092,8 @@ class evalcode
     protected function process_save_quick_grades()
     {
         global $USER, $DB, $CFG;
-
-        // Need grade permission.
+       
+		// Need grade permission.
         require_capability('mod/evalcode:grade', $this->context);
         require_sesskey();
 
@@ -6796,7 +6808,8 @@ class evalcode
     protected function process_save_submission(&$mform, &$notices)
     {
         global $CFG,$DB,$USER;
-        $instance = $this->get_instance();
+        //error_log ("usuario: ".$USER->id."\n",3,EVALCODE_LOG_FILE);
+		$instance = $this->get_instance();
         $record = $DB->get_record('evalcode',array('id' => $instance->id),$fields='*',IGNORE_MISSING);
         // Transform xml string containing the selected tools in an object
         $xml=simplexml_load_string($record->selectedtools);
@@ -6808,7 +6821,7 @@ class evalcode
         $firstTool = TRUE;
         // Iterate for each evaluation tool
         foreach ($toolslist as $tool) {
-            $path = "/var/www/mod/evalcode";
+            $path = "/var/www/html/moodle/mod/evalcode";
             // If selected tool has an evaluate script
             if (file_exists($path . "/tools/".$tool->language.'/'.$tool->name.'/evaluate.php')) {
                 // Inherit evaluation tool parameters
@@ -6818,7 +6831,7 @@ class evalcode
                 require_once($CFG->dirroot . '/mod/evalcode/externallib.php');
                 require_once($CFG->dirroot . '/mod/evalcode/submission_form.php');
                 // Get the user ID
-                $userid = optional_param('userid', $USER->id, PARAM_INT);
+				$userid = optional_param('userid', $USER->id, PARAM_INT);
                 // Need submit permission to submit an evalcodeframework.
                 require_sesskey();
                 if (!$this->submissions_open($userid)) {
@@ -6846,14 +6859,14 @@ class evalcode
                 $context = $this->get_context();
                 //Download from de db the user submission files
                 $submission = $this->get_user_submission($userid, false);
-                /*
+                
                 //If there are not any files at all, return false
-                if (empty($submission))
-                {   
-                    $notices[] = get_string('nofilesprovided', 'evalcode'). $fileName;
-                    return false;
-                }
-                */
+                //if (submission_empty($submission))
+                //{   
+                //    $notices[] = get_string('nofilesprovided', 'evalcode'). $fileName;
+                //    return false;
+                //}
+                
                 $data = new stdClass();
                 $data->userid = $userid;
                 $mform = new mod_eval_submission_form(null, array($this, $data));
@@ -6869,7 +6882,7 @@ class evalcode
                     //Set the current path to this one created
                     chdir($path);
                     $files = $fs->get_area_files($context->id, 'evalsubmission_file', EVALSUBMISSION_FILE_FILEAREA, $submission->id);
-                    //If the submission is empty stays in the submission page and shows a messaggE
+                    //If the submission is empty stays in the submission page and shows a messagge
                     if (sizeof(array_values($files))==1)
                     {   
                         return false;
@@ -6925,6 +6938,8 @@ class evalcode
                 }
             }
         }
+        $userid = optional_param('userid', $USER->id, PARAM_INT);
+
         //save grade and feedback comment
         $elemName = "files_" . $userid . "_filemanager";
         $fs = get_file_storage();
@@ -8539,8 +8554,8 @@ class evalcode
 
         return;
     }
-
-
+    
+    
 }
 
 /**
@@ -8824,14 +8839,5 @@ class evalcode_portfolio_caller extends portfolio_module_caller_base
     public static function base_supported_formats()
     {
         return array(PORTFOLIO_FORMAT_FILE, PORTFOLIO_FORMAT_LEAP2A);
-    }
-
-    /*
-     * Evalcode log to file
-     */
-    const EVALCODE_LOG_FILE = "/var/www/moodledata/temp/filestorage/evalcode.log";
-    public function evalcode_log($msg)
-    {
-        error_log("$msg\n", 3, self::EVALCODE_LOG_FILE);
     }
 }
