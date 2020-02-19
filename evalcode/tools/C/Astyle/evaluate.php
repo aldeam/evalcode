@@ -19,46 +19,38 @@
  * NOTE: This is an Anonymous function, that's the reason why it has to be inside $evaluatefunc.
  */
 $evaluatefunc = function ($path,$returndata,$additionalParams){
-    /*shell_exec('find * -name "*.c" > sources_list.txt');
+	//error_log("DIRECTORIO: ".$path."\n", 3, "/var/www/moodledata/temp/filestorage/evalcode.log");
+	shell_exec('find * -name "*.c" > sources_list.txt');
     $contents = file_get_contents('sources_list.txt');
-    $salida = shell_exec('style50 -o score @sources_list.txt 2>&1');
+    //$salida = shell_exec('style50 -o score sources_list.txt 2>&1');
+    error_log("ARCHIVO: ".$contents."\n", 3, "/var/www/moodledata/temp/filestorage/evalcode.log");
+    $salida = shell_exec('style50 -o score '.$contents);
+    
     if(strpos($salida,'error') || strpos($salida,'errors')){
         $returndata->grade = 0;
         $returndata->feedbackcomment = "Error: <br>".str_replace("\n", "<br>", $salida);
         return $returndata;
     }
+    
+    error_log("Grade: ".$salida."\n", 3, "/var/www/moodledata/temp/filestorage/evalcode.log");
+    error_log("Path: ".$path."\n", 3, "/var/www/moodledata/temp/filestorage/evalcode.log");
 
-    error_log("Sell exec: ".$salida."\n", 3, "/var/www/moodledata/temp/filestorage/evalcode.log");
-    shell_exec('style50 -o split @sources_list.txt > feedback.log');
-    $feedback =	shell_exec('ansi2html < feedback.log');
-    $grade = intval($salida);
-    */
-    $grade = 50;
+    $grade = floatval($salida)*100;
+
+    $output = shell_exec('style50 '.$contents);
+    $fh = fopen('feedback.log','w');
+    fwrite($fh,$output);
+    fclose($fh);
+
+    $feedback= shell_exec('ansi2html < feedback.log');
+    error_log("Sell exec: ".$feedback."\n", 3, "/var/www/moodledata/temp/filestorage/evalcode.log");
+    
+    $fh = fopen('feedback.html','w');
+    fwrite($fh,$feedback);
+
     $comment = "";
     $comment .= "ASTYLE RESULT: <br>";
-    $comment .= '
-        <table>
-            <tr>
-                <td>#include &#60;stdio.h&#62; </td>
-                <td>#include &#60;stdio.h&#62;</td>
-            </tr>
-            <tr>
-                <td>int main(void)</td>
-                <td>int main(void)</td>
-            </tr>
-            <tr>
-                <td>&nbsp&nbsp&nbsp&nbsp<font color="red">{</font></td>
-                <td><font color="green">{</font></td>
-            </tr>
-            <tr>
-                <td>printf("hello, world\n");&nbsp&nbsp&nbsp</td>
-                <td> <font color="green">....</font>printf("hello, world\n");</td>
-            </tr>
-            <tr>
-                <td>&nbsp&nbsp&nbsp&nbsp<font color="red">}</font></td>
-                <td><font color="green">}</font></td>
-            </tr>
-        </table>';
+    $comment .= $feedback;
     $comment .= "<br>\tAstyle grade: " . $grade;
 
     $returndata->grade = $grade;

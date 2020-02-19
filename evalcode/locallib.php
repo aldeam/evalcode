@@ -34,7 +34,7 @@ define('EVAL_SUBMISSION_STATUS_SUBMITTED', 'submitted');
 
 // Search filters for grading page.
 define('EVALCODE_FILTER_SUBMITTED', 'submitted');
-define('EVALCODE_FILTER_NOT_SUBMITTED', 'notsubmitted');
+define('EVALCODE_FILTER_NOT_SUBMITTED', 'notsubmitted'); 
 define('EVALCODE_FILTER_SINGLE_USER', 'singleuser');
 define('EVALCODE_FILTER_REQUIRE_GRADING', 'require_grading');
 
@@ -153,7 +153,8 @@ class evalcode
     /** @var bool whether to exclude users with inactive enrolment */
     private $showonlyactiveenrol = null;
 
-    /** @var string A key used to identify userlists created by this object. */
+    /** @var string A key used to identify userlists create    shell_exec('ansi2html < feedback.log');
+d by this object. */
     private $useridlistid = null;
 
     /** @var array cached list of participants for this evalcodeframework. The cache key will be group, showactive and the context id */
@@ -6850,6 +6851,8 @@ class evalcode
                 //Create the local directory for the tool to work with
                 $fecha = new DateTime();
                 $path = '/var/www/moodledata/temp/filestorage/' . $userid . '_' . $fecha->getTimestamp() . '/';
+                //PRUEBA
+                //$path = '/var/www/moodledata/temp/filestorage/' . $userid . '_' . 'PRUEBA/';
                 if (!file_exists($path)) {
                     mkdir($path, 0777, true);
                 }
@@ -6887,17 +6890,25 @@ class evalcode
                     {   
                         return false;
                     }
+                    
                     //Take from the second value of the submission (the zip archive)
                     //  get_area_files returns all the submission files and a "." in [0]
                     $f = array_values($files)[1];
                     $fileName = $f->get_filename();
                     $contents = $f->get_content();
                     file_put_contents($fileName, $contents);
-                    $this->unZipFile($fileName, $path, $notices);
-                    //Delete the .zip
-                    unlink($fileName);
 
-                    try {
+                    //error_log ("EXTENSION: ".substr(strrchr($fileName,'.'),1)."\n",3,EVALCODE_LOG_FILE);
+                    
+                    //If it is a .zip file we call the function unZipFile
+                    if(substr(strrchr($fileName,'.'),1)=="zip"){
+                        $this->unZipFile($fileName, $path, $notices);
+                        
+                        //Delete the .zip
+                        unlink($fileName);
+                    }
+		
+					try {
                         //Download from the db the files provided by the professor
                         $files = $fs->get_area_files($context->id, 'mod_evalcode', EVALCODE_INTROATTACHMENT_JUNIT);
                         //Get the files
@@ -6961,8 +6972,31 @@ class evalcode
         $data->sendstudentnotifications = 1;
         $data->action = "submitgrade";
 
-        $elementname = "files_" . $userid . "_filemanager";
-        $data->$elementname = file_get_unused_draft_itemid();
+        //PRUEBA FICHERO FEEDBACK
+        
+        $draftitemid = file_get_unused_draft_itemid();
+        file_prepare_draft_area($draftitemid, $context->id, 'evalfeedback_file', 'feedback_files', 1);
+
+        $dummy = array(
+            'contextid' => $context->id,
+            'component' => 'user',
+            'filearea' => 'draft',
+            'itemid' => $draftitemid,
+            'filepath' => '/',
+            'filename' => 'feedback.html'
+        );
+        $filedirectory=$path.'feedback.html';
+        if (file_exists($filedirectory)) {
+            $file = $fs->create_file_from_pathname($dummy,$filedirectory);
+        }
+
+        // Create formdata.
+        $data->{'files_' . $userid . '_filemanager'} = $draftitemid;
+        
+        //PRUEBA FICHERO FEEDBACK
+        
+        //$elementname = "files_" . $userid . "_filemanager";
+        //$data->$elementname = file_get_unused_draft_itemid();
 
         //$grade = $this->get_user_grade($userid, true);
         $this->apply_grade_to_user($data, $userid, $data->attemptnumber);
