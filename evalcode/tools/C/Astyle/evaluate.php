@@ -19,11 +19,12 @@
  * NOTE: This is an Anonymous function, that's the reason why it has to be inside $evaluatefunc.
  */
 $evaluatefunc = function ($path,$returndata,$additionalParams){
-	//error_log("DIRECTORIO: ".$path."\n", 3, "/var/www/moodledata/temp/filestorage/evalcode.log");
+    global $USER;
+
 	shell_exec('find * -name "*.c" > sources_list.txt');
     $contents = file_get_contents('sources_list.txt');
-    //$salida = shell_exec('style50 -o score sources_list.txt 2>&1');
     error_log("ARCHIVO: ".$contents."\n", 3, "/var/www/moodledata/temp/filestorage/evalcode.log");
+    //It only takes the first file. Only working for 1 file
     $salida = shell_exec('style50 -o score '.$contents);
     
     if(strpos($salida,'error') || strpos($salida,'errors')){
@@ -42,16 +43,12 @@ $evaluatefunc = function ($path,$returndata,$additionalParams){
     fwrite($fh,$output);
     fclose($fh);
 
-    $feedback= shell_exec('ansi2html < feedback.log');
-    error_log("Sell exec: ".$feedback."\n", 3, "/var/www/moodledata/temp/filestorage/evalcode.log");
+    $feedback= shell_exec('ansi2html --white --title "'.fullname($USER).'" < feedback.log');
     
     $fh = fopen('feedback.html','w');
     fwrite($fh,$feedback);
 
-    $comment = "";
-    $comment .= "ASTYLE RESULT: <br>";
-    $comment .= $feedback;
-    $comment .= "<br>\tAstyle grade: " . $grade;
+    $comment = "".$feedback;
 
     $returndata->grade = $grade;
     $returndata->feedbackcomment = $comment;

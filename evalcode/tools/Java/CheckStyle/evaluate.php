@@ -32,8 +32,10 @@ $evaluatefunc = function ($path,$returndata,$additionalParams){
         }
     }
 
-    $comand2 = '/usr/java/jdk1.8.0_131/bin/java -jar /var/www/checkstyle-8.15-all.jar -c /var/www/checkstyle_ed_checks.xml @'.$path.'sources_list.txt 2>&1';
+    $comand2 = '/usr/lib/jvm/java-1.8.0-openjdk-amd64/bin/java -jar /var/www/checkstyle-8.15-all.jar -c /var/www/checkstyle_ed_checks.xml @'.$path.'sources_list.txt 2>&1';
     $qualityData = shell_exec($comand2);
+
+    error_log("CHECKSTYLE RESULT: ".$qualityData."\n", 3, "/var/www/moodledata/temp/filestorage/evalcode.log");
 
     $countErrors = substr_count($qualityData, '[ERROR]');
     $countWarns = substr_count($qualityData, '[WARN]');
@@ -42,14 +44,14 @@ $evaluatefunc = function ($path,$returndata,$additionalParams){
         $grade = 0;
     }
     $comment = "";
-    $comment .= "<br><br>QUALITY CHECK RESULT: <br>";
+    $comment .= "<br>QUALITY CHECK RESULT: <br>";
     $comment .= "<br>\tErrors: " . $countErrors;
     $comment .= "<br>\tWarnings: " . $countWarns;
     if(($countErrors+$countWarns)>0){
         $comment .= "<br><br>Errors/Warns detected: <br>".str_replace("\n", "<br>", $qualityData);
     }
     $comment .= "<br>\tMax errors permited: ".$additionalParams;
-    $comment .= "<br>\tQuality check grade: " . $grade;
+    $comment .= "<br><br><b>\tQuality check grade: " . $grade."</b>";
     
     $returndata->grade = $grade;
     $returndata->feedbackcomment = $comment;

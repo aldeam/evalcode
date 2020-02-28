@@ -153,8 +153,7 @@ class evalcode
     /** @var bool whether to exclude users with inactive enrolment */
     private $showonlyactiveenrol = null;
 
-    /** @var string A key used to identify userlists create    shell_exec('ansi2html < feedback.log');
-d by this object. */
+    /** @var string A key used to identify userlists created by this object. */
     private $useridlistid = null;
 
     /** @var array cached list of participants for this evalcodeframework. The cache key will be group, showactive and the context id */
@@ -1273,9 +1272,15 @@ d by this object. */
                 $default = $plugin->is_enabled();
             }
             $mform->setDefault($plugin->get_subtype() . '_' . $plugin->get_type() . '_enabled', $default);
-
+            
+            //We will leave disabled by default the option Feedback Types -> Feedback Files 
+            if($plugin->get_subtype()=='evalfeedback'){
+                if($plugin->get_type()=='file'){
+                    $mform->setDefault($plugin->get_subtype() . '_' . $plugin->get_type() . '_enabled', 0);
+                }
+            }
+            
             $plugin->get_settings($mform);
-
         }
     }
 
@@ -6863,12 +6868,14 @@ d by this object. */
                 //Download from de db the user submission files
                 $submission = $this->get_user_submission($userid, false);
                 
-                //If there are not any files at all, return false
-                //if (submission_empty($submission))
-                //{   
-                //    $notices[] = get_string('nofilesprovided', 'evalcode'). $fileName;
-                //    return false;
-                //}
+                /*
+                If there are not any files at all, return false *Not working 
+                if (submission_empty($submission))
+                {   
+                    $notices[] = get_string('nofilesprovided', 'evalcode'). $fileName;
+                    return false;
+                }
+                */
                 
                 $data = new stdClass();
                 $data->userid = $userid;
@@ -6885,6 +6892,7 @@ d by this object. */
                     //Set the current path to this one created
                     chdir($path);
                     $files = $fs->get_area_files($context->id, 'evalsubmission_file', EVALSUBMISSION_FILE_FILEAREA, $submission->id);
+                    
                     //If the submission is empty stays in the submission page and shows a messagge
                     if (sizeof(array_values($files))==1)
                     {   
@@ -6898,8 +6906,6 @@ d by this object. */
                     $contents = $f->get_content();
                     file_put_contents($fileName, $contents);
 
-                    //error_log ("EXTENSION: ".substr(strrchr($fileName,'.'),1)."\n",3,EVALCODE_LOG_FILE);
-                    
                     //If it is a .zip file we call the function unZipFile
                     if(substr(strrchr($fileName,'.'),1)=="zip"){
                         $this->unZipFile($fileName, $path, $notices);
@@ -6932,7 +6938,7 @@ d by this object. */
                         //Calculate abd save the grade
                         $auxGrade = $auxGrade+($result->grade * (intval($tool->percentage)/100));
                         //save the feedback
-                        $feedback = $feedback."<br><h5><b>-".$tool->name." (".$tool->percentage."%) feedback comment:</b></h5><br>".$result->feedbackcomment."<br>";
+                        $feedback = $feedback."<br><h4><b>-".$tool->name." (".$tool->percentage."%) feedback comment:</b></h4>".$result->feedbackcomment."<br>";
                     
                     } catch (Exception $e) {
                         $auxGrade = 0;
@@ -6956,8 +6962,47 @@ d by this object. */
         $fs = get_file_storage();
         $context = context_user::instance($userid);
         
-
         $data = new stdClass();
+        
+        //We search in the feedbacknplugins for the feedback files and we check if it is enabled or not
+        foreach ($this->feedbackplugins as $plugin) {
+            if($plugin->get_type()=='file'){
+                $feedbacFilesEnabled=$plugin->is_enabled();
+            }
+        }
+
+        //If the feedbackFiles option is enabled we return a feedback file as feedback
+        if($feedbacFilesEnabled){
+            error_log ("ACTIVADOS ARCHIVOS DE FEEDBACK",3,EVALCODE_LOG_FILE);
+
+            $draftitemid = file_get_unused_draft_itemid();
+            file_prepare_draft_area($draftitemid, $context->id, 'evalfeedback_file', 'feedback_files', 1);
+
+            $dummy = array(
+                'contextid' => $context->id,
+                'component' => 'user',
+                'filearea' => 'draft',
+                'itemid' => $draftitemid,
+                'filepath' => '/',
+                'filename' => 'feedback.html'
+            );
+            
+            $file = $fs->create_file_from_string($dummy,$feedback);
+        
+            //New comment to point that the feedback is in the feedback file 
+            $feedback="Puede ver el Feedback generado en el fichero adjunto <br>";
+
+            // Create formdata with the feedback file
+            $data->{'files_' . $userid . '_filemanager'} = $draftitemid;
+        
+        }else{
+            error_log ("DESACTIVADOS ARCHIVOS DE FEEDBACK",3,EVALCODE_LOG_FILE);
+
+            // Create formdata without the feedback file
+            $elementname = "files_" . $userid . "_filemanager";
+            $data->$elementname = file_get_unused_draft_itemid();
+        }
+        
         $data->grade = $auxGrade;
         $data->evalfeedbackcomments_editor = [
                 "text" => $feedback,
@@ -6972,33 +7017,6 @@ d by this object. */
         $data->sendstudentnotifications = 1;
         $data->action = "submitgrade";
 
-        //PRUEBA FICHERO FEEDBACK
-        
-        $draftitemid = file_get_unused_draft_itemid();
-        file_prepare_draft_area($draftitemid, $context->id, 'evalfeedback_file', 'feedback_files', 1);
-
-        $dummy = array(
-            'contextid' => $context->id,
-            'component' => 'user',
-            'filearea' => 'draft',
-            'itemid' => $draftitemid,
-            'filepath' => '/',
-            'filename' => 'feedback.html'
-        );
-        $filedirectory=$path.'feedback.html';
-        if (file_exists($filedirectory)) {
-            $file = $fs->create_file_from_pathname($dummy,$filedirectory);
-        }
-
-        // Create formdata.
-        $data->{'files_' . $userid . '_filemanager'} = $draftitemid;
-        
-        //PRUEBA FICHERO FEEDBACK
-        
-        //$elementname = "files_" . $userid . "_filemanager";
-        //$data->$elementname = file_get_unused_draft_itemid();
-
-        //$grade = $this->get_user_grade($userid, true);
         $this->apply_grade_to_user($data, $userid, $data->attemptnumber);
         $this->process_outcomes($userid, $data);
         return TRUE;
@@ -7254,7 +7272,7 @@ d by this object. */
             $name = get_string('outof', 'evalcode', $strparams);
             $mform->addElement('static', 'gradingstudent', get_string('gradingstudent', 'evalcode'), $name);
         }
-
+        
         // Let feedback plugins add elements to the grading form.
         $this->add_plugin_grade_elements($grade, $mform, $data, $userid);
 

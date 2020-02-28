@@ -41,9 +41,9 @@ $evaluatefunc = function ($path,$returndata,$additionalParams){
     }
 
     error_log("Sell exec: ".$salida."\n", 3, "/var/www/moodledata/temp/filestorage/evalcode.log");
-    $junitResult = shell_exec('java -cp .:/var/www/hamcrest-core-1.3.jar:/var/www/junit4.jar org.junit.runner.JUnitCore ' . $testClassFileName . ' 2>&1');
+    $junitResult = shell_exec('java -cp .:/var/www/hamcrest-core-1.3.jar:/var/www/junit-4.12.jar org.junit.runner.JUnitCore ' . $testClassFileName . ' 2>&1');
     error_log("Test class filename: ".$testClassFileName."\n", 3, "/var/www/moodledata/temp/filestorage/evalcode.log");
-    error_log("Junit: ".$junitResult."\n", 3, "/var/www/moodledata/temp/filestorage/evalcode.log");
+    //error_log("Junit: ".$junitResult."\n", 3, "/var/www/moodledata/temp/filestorage/evalcode.log");
     $result = [];
 
     preg_match('/^.*(?:OK).*$(?:\r\n|\n)?/m',$junitResult,$totalTest);
@@ -71,14 +71,15 @@ $evaluatefunc = function ($path,$returndata,$additionalParams){
     }
     //echo($grade);
     $comment = "";
-    $comment .= "JUNIT RESULT: <br>";
+    $comment .= "<br>JUNIT RESULT: <br>";
     $comment .= "<br>\tTotal test(s): " . $countTotalTest;
     $comment .= "<br>\tMin correct test(s) required: " . $additionalParams;
     if($countFailureTest>0){
         $comment .= "<br>\tFailure test(s): " . $countFailureTest;
+        $comment .= "<br><br><b>\tJUnit test grade: " . $grade."</b>";
         $comment .= "<br><br>Failed Test(s): <br>".str_replace("\n", "<br>", $junitResult);
     }
-    $comment .= "<br>\tJUnit test grade: " . $grade;
+    $comment .= "<br><br><b>\tJUnit test grade: " . $grade."</b>";
 
     $returndata->grade = $grade;
     $returndata->feedbackcomment = $comment;
