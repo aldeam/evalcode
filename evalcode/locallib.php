@@ -6804,6 +6804,33 @@ class evalcode
     }
 
     /**
+     * Unrars fileName in specific path NOT WORKING
+     * @param fileName $fileName with the name of the desired file to unrar
+     * @param path Objective $path for the final files
+     * @return list with the files extracted
+     * 
+     * @throws error if failed to unrar file
+     */
+    public function unRarFile($fileName, $path, &$notices)
+    {
+        $listFiles = [];
+        $rar = RarArchive::open($fileName, 'samplepassword');
+        //$rar = new RarArchive::open($fileName);
+        if ($rar->open($fileName) === TRUE) {
+            for ($i = 0; $i < $rar->numFiles; $i++) {
+                $listFiles[] = $rar->getNameIndex($i);
+            }
+            $rar->extractTo($path);
+            $rar->close();
+            return $listFiles;
+        } else {
+            //Error, failed to unrar file
+            $notices[] = get_string('failedunrar', 'evalcode'). $fileName;
+            //return [];
+        }
+    }
+
+    /**
      * Save evalcodeframework submission.
      *
      * @param  moodleform $mform
@@ -6913,8 +6940,17 @@ class evalcode
                         //Delete the .zip
                         unlink($fileName);
                     }
-		
-					try {
+
+                    //If it is a .rar file we call the function unZipFile
+                    if(substr(strrchr($fileName,'.'),1)=="rar"){
+                        $this->unRarFile($fileName, $path, $notices);
+                         
+                        //Delete the .zip
+                        //unlink($fileName);
+
+                    }
+
+		            try {
                         //Download from the db the files provided by the professor
                         $files = $fs->get_area_files($context->id, 'mod_evalcode', EVALCODE_INTROATTACHMENT_JUNIT);
                         //Get the files
@@ -6938,7 +6974,7 @@ class evalcode
                         //Calculate abd save the grade
                         $auxGrade = $auxGrade+($result->grade * (intval($tool->percentage)/100));
                         //save the feedback
-                        $feedback = $feedback."<br><h4><b>-".$tool->name." (".$tool->percentage."%) feedback comment:</b></h4>".$result->feedbackcomment."<br>";
+                        $feedback = $feedback."<br><h4><strong>-".$tool->name." (".$tool->percentage."%) feedback comment:</strong></h4>".$result->feedbackcomment."<br>";
                     
                     } catch (Exception $e) {
                         $auxGrade = 0;
@@ -6986,7 +7022,7 @@ class evalcode
                 'filepath' => '/',
                 'filename' => 'feedback.html'
             );
-            
+
             $file = $fs->create_file_from_string($dummy,$feedback);
         
             //New comment to point that the feedback is in the feedback file 

@@ -36,13 +36,19 @@ $evaluatefunc = function ($path,$returndata,$additionalParams){
     $qualityData = shell_exec($comand2);
 
     error_log("CHECKSTYLE RESULT: ".$qualityData."\n", 3, "/var/www/moodledata/temp/filestorage/evalcode.log");
-
+    
     $countErrors = substr_count($qualityData, '[ERROR]');
     $countWarns = substr_count($qualityData, '[WARN]');
-    $grade = 100 - ((intval($countErrors)+ intval($countWarns)/3) * 50 / intval($additionalParams));
+    /*$grade = 100 - ((intval($countErrors)+ intval($countWarns)/3) * 50 / intval($additionalParams));
     if($grade<0){
         $grade = 0;
+    }*/
+    if(((intval($countErrors)+ intval($countWarns))>intval($additionalParams))){
+        $grade = 0;
+    }else{
+        $grade = 100-(100*(intval($countErrors)+ intval($countWarns))/intval($additionalParams));
     }
+
     $comment = "";
     $comment .= "<br>QUALITY CHECK RESULT: <br>";
     $comment .= "<br>\tErrors: " . $countErrors;
@@ -51,7 +57,7 @@ $evaluatefunc = function ($path,$returndata,$additionalParams){
         $comment .= "<br><br>Errors/Warns detected: <br>".str_replace("\n", "<br>", $qualityData);
     }
     $comment .= "<br>\tMax errors permited: ".$additionalParams;
-    $comment .= "<br><br><b>\tQuality check grade: " . $grade."</b>";
+    $comment .= "<br><br><strong>\tQuality check grade: " . $grade."</strong>";
     
     $returndata->grade = $grade;
     $returndata->feedbackcomment = $comment;
