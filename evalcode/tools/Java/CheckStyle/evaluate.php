@@ -49,15 +49,16 @@ $evaluatefunc = function ($path,$returndata,$additionalParams){
         $grade = 100-(100*(intval($countErrors)+ intval($countWarns))/intval($additionalParams));
     }
 
-    $comment = "";
-    $comment .= "<br>QUALITY CHECK RESULT: <br>";
-    $comment .= "<br>\tErrors: " . $countErrors;
+    $comment = "<font size='3'>";
+    $comment .= "\tErrors: " . $countErrors;
     $comment .= "<br>\tWarnings: " . $countWarns;
+    $comment .= "<br>\tMax errors permited: ".$additionalParams;
+    $comment .= "<br><br><strong>\tQuality check grade: " . $grade."</strong></font>";
     if(($countErrors+$countWarns)>0){
         $comment .= "<br><br>Errors/Warns detected: <br>".str_replace("\n", "<br>", $qualityData);
     }
-    $comment .= "<br>\tMax errors permited: ".$additionalParams;
-    $comment .= "<br><br><strong>\tQuality check grade: " . $grade."</strong>";
+    
+    
     
     $returndata->grade = $grade;
     $returndata->feedbackcomment = $comment;

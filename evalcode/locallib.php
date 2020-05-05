@@ -6971,6 +6971,9 @@ class evalcode
                     $rdata = new stdClass();
                     try {
                         $result = $evaluatefunc($path,$rdata,$tool->additional_params);
+                        //PRUEBA
+                        $tool->grade=$result->grade;
+                        //PRUEBA
                         //Calculate abd save the grade
                         $auxGrade = $auxGrade+($result->grade * (intval($tool->percentage)/100));
                         //save the feedback
@@ -7025,8 +7028,37 @@ class evalcode
 
             $file = $fs->create_file_from_string($dummy,$feedback);
         
-            //New comment to point that the feedback is in the feedback file 
-            $feedback="Puede ver el Feedback generado en el fichero adjunto <br>";
+            //We display a table with a resume of the results obtained in each tool 
+            if(sizeof($toolslist)==0){
+   
+            }else{
+                $feedbackTable="<table border='1'>
+                                <thead>
+                                <tr>
+                                <th>Herramienta</th>";
+                foreach ($toolslist as $tool) {
+                    $feedbackTable.="
+                                   
+                                        <th>".$tool->name." (".$tool->percentage."%)</th>";
+                }
+                $feedbackTable.="       <th>Total (100%)</th>
+                                    </tr>
+                                 </thead>
+                                 <tbody>
+                                    <tr>
+                                        <th style='border: 1px solid black;'>Calificacion</th>";
+                foreach ($toolslist as $tool) {
+                    $feedbackTable.="
+                                        <td style='border: 1px solid black;'><div align='center'>".$tool->grade."</div></td>";
+                }
+                $feedbackTable.="        <td><div align='center'>".$auxGrade."</div></td>   
+                                    </tr>
+                                </tbody>
+                            </table><br>
+                            Para más información consulte el fichero adjunto.<br>
+                            For further information read the attached file.<br><br>";
+           } 
+            $feedback= $feedbackTable;
 
             // Create formdata with the feedback file
             $data->{'files_' . $userid . '_filemanager'} = $draftitemid;
