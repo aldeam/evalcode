@@ -1273,13 +1273,13 @@ class evalcode
             }
             $mform->setDefault($plugin->get_subtype() . '_' . $plugin->get_type() . '_enabled', $default);
             
-            //We will leave disabled by default the option Feedback Types -> Feedback Files 
-            if($plugin->get_subtype()=='evalfeedback'){
+            //We will leave disabled by default the option Feedback Types -> Feedback Files FINNALY NOT USED
+         /*   if($plugin->get_subtype()=='evalfeedback'){
                 if($plugin->get_type()=='file'){
                     $mform->setDefault($plugin->get_subtype() . '_' . $plugin->get_type() . '_enabled', 0);
                 }
             }
-            
+         */   
             $plugin->get_settings($mform);
         }
     }
@@ -7049,9 +7049,9 @@ class evalcode
                                         <th style='border: 1px solid black;'>Calificacion</th>";
                 foreach ($toolslist as $tool) {
                     $feedbackTable.="
-                                        <td style='border: 1px solid black;'><div align='center'>".$tool->grade."</div></td>";
+                                        <td style='border: 1px solid black;'><div align='center'>".round((float)$tool->grade,2)."</div></td>";
                 }
-                $feedbackTable.="        <td><div align='center'>".$auxGrade."</div></td>   
+                $feedbackTable.="        <td><div align='center'>".round($auxGrade,2)."</div></td>   
                                     </tr>
                                 </tbody>
                             </table><br>

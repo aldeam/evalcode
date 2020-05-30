@@ -4,6 +4,9 @@
  */
 //### Astyle ###
 
+//File that contains the secure_exec function to operate in a sandbox with the submmited files
+require_once('/var/www/html/moodle/mod/evalcode/tools/secure_exec.php');
+
 /**
  * This is the function called when a student clicks the 'Submit' button
  * @param $path Is the temporal path in wich your function will operate, it contains 
@@ -38,7 +41,7 @@ $evaluatefunc = function ($path,$returndata,$additionalParams){
 
     $grade = floatval($salida)*100;
 
-    $output = shell_exec('style50 '.$contents);
+    $output = secure_exec('style50 '.$contents);
     $fh = fopen('feedback.log','w');
     fwrite($fh,$output);
     fclose($fh);

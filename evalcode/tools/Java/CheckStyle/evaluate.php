@@ -4,6 +4,9 @@
  */
 //### CheckStyle ###
 
+//File that contains the secure_exec function to operate in a sandbox with the submmited files
+require_once('/var/www/html/moodle/mod/evalcode/tools/secure_exec.php');
+
 /**
  * This is the function called when a student clicks the 'Submit' button
  * @param $path Is the temporal path in wich your function will operate, it contains 
@@ -33,7 +36,7 @@ $evaluatefunc = function ($path,$returndata,$additionalParams){
     }
 
     $comand2 = '/usr/lib/jvm/java-1.8.0-openjdk-amd64/bin/java -jar /var/www/checkstyle-8.15-all.jar -c /var/www/checkstyle_ed_checks.xml @'.$path.'sources_list.txt 2>&1';
-    $qualityData = shell_exec($comand2);
+    $qualityData = secure_exec($comand2);
 
     error_log("CHECKSTYLE RESULT: ".$qualityData."\n", 3, "/var/www/moodledata/temp/filestorage/evalcode.log");
     

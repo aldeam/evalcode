@@ -4,6 +4,9 @@
  */
 //### JUNIT ###
 
+//File that contains the secure_exec function to operate in a sandbox with the submmited files
+require_once('/var/www/html/moodle/mod/evalcode/tools/secure_exec.php');
+
 /**
  * This is the function called when a student clicks the 'Submit' button
  * @param $path Is the temporal path in wich your function will operate, it contains
@@ -22,7 +25,7 @@
  */
 $evaluatefunc = function ($path,$returndata,$additionalParams){
   
-  shell_exec('find * -name "*.java" > sources_list.txt');
+    shell_exec('find * -name "*.java" > sources_list.txt');
 
     $testClassFileName = shell_exec('grep -n "Test" '.$path.'sources_list.txt');
     /*
@@ -45,7 +48,7 @@ $evaluatefunc = function ($path,$returndata,$additionalParams){
         return $returndata;
     }
 
-    $junitResult = shell_exec('java -jar /var/www/junit-platform-console-standalone-1.6.0.jar --class-path out --scan-class-path 2>&1');
+    $junitResult = secure_exec('java -jar /var/www/junit-platform-console-standalone-1.6.0.jar --class-path out --scan-class-path 2>&1');
 
     $output = $junitResult;
     $fh = fopen('feedback.log','w');
@@ -96,5 +99,6 @@ $evaluatefunc = function ($path,$returndata,$additionalParams){
     $returndata->grade = $grade;
     $returndata->feedbackcomment = $comment;
     return $returndata;
-}
+};
+
 ?>
