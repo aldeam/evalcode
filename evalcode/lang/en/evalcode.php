@@ -95,6 +95,8 @@ $string['batchoperationconfirmsetmarkingworkflowstate'] = 'Set marking workflow 
 $string['batchoperationconfirmsetmarkingallocation'] = 'Set marking allocation for all selected submissions?';
 $string['batchoperationconfirmdownloadselected'] = 'Download selected submissions?';
 $string['batchoperationconfirmrunevalcode'] = 'Run auto eval code in selected submissions?';
+#PRUEBA
+$string['batchoperationconfirmruncompare'] = 'Run compare50 with selected submissions?';
 $string['batchoperationlock'] = 'lock submissions';
 $string['batchoperationunlock'] = 'unlock submissions';
 $string['batchoperationreverttodraft'] = 'revert submissions to draft';
@@ -140,7 +142,9 @@ $string['description'] = 'Description';
 $string['downloadall'] = 'Download all submissions';
 $string['download all submissions'] = 'Download all submissions in a zip file.';
 $string['downloadselectedsubmissions'] = 'Download selected submissions';
-$string['runevalcode'] = 'Run eval code';
+$string['runevalcode'] = 'Run evalcode';
+$string['runcompare'] = 'Run Compare50';
+#PRUEBA
 $string['duedate'] = 'Due date';
 $string['duedatecolon'] = 'Due date: {$a}';
 $string['duedate_help'] = 'This is when the evalcodeframework is due. Submissions will still be allowed after this date but any evalcodeframeworks submitted after this date are marked as late. To prevent submissions after a certain date - set the evalcodeframework cut off date.';

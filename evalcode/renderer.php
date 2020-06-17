@@ -1226,6 +1226,7 @@ class mod_evalcode_renderer extends plugin_renderer_base {
         $this->page->requires->string_for_js('batchoperationconfirmunlock', 'evalcode');
         $this->page->requires->string_for_js('batchoperationconfirmaddattempt', 'evalcode');
         $this->page->requires->string_for_js('batchoperationconfirmrunevalcode', 'evalcode');
+        $this->page->requires->string_for_js('batchoperationconfirmruncompare', 'evalcode'); #PRUEBA
         $this->page->requires->string_for_js('batchoperationconfirmdownloadselected', 'evalcode');
         $this->page->requires->string_for_js('batchoperationconfirmsetmarkingworkflowstate', 'evalcode');
         $this->page->requires->string_for_js('batchoperationconfirmsetmarkingallocation', 'evalcode');

@@ -92,6 +92,12 @@ M.mod_evalcode.init_grading_table = function(Y) {
                         plugin = pluginaction.split('_')[0];
                         action = pluginaction.substr(plugin.length + 1);
                         confirmmessage = M.util.get_string('batchoperationconfirm' + action, 'evalfeedback_' + plugin);
+                    } else if(action.indexOf(prefix) == 1){ //PRUEBA
+                        pluginaction = action.substr(prefix.length);
+                        plugin = pluginaction.split('_')[0];
+                        action = pluginaction.substr(plugin.length + 1);
+                        window.alert(action);
+                        confirmmessage = M.util.get_string('batchoperationconfirm' + action, 'evalfeedback_' + plugin);
                     } else {
                         confirmmessage = M.util.get_string('batchoperationconfirm' + operation.get('value'), 'evalcode');
                     }

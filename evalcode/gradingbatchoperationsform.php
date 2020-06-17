@@ -46,6 +46,8 @@ class mod_evalcode_grading_batch_operations_form extends moodleform {
         $options = array();
 
         $options['runevalcode'] = get_string('runevalcode', 'evalcode');
+        //$options['runcompare'] = 'Run Compare50';
+        $options['runcompare'] = get_string('runcompare', 'evalcode');
 
 
         $mform->addElement('hidden', 'action', 'gradingbatchoperation');

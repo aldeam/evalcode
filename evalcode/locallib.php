@@ -86,6 +86,8 @@ require_once($CFG->libdir . '/eventslib.php');
 require_once($CFG->libdir . '/portfolio/caller.php');
 //Language config scripts
 require_once($CFG->dirroot . '/mod/evalcode/tools/JavaConfig.php');
+//plagiarism tool
+require_once($CFG->dirroot . '/mod/evalcode/plagiarism/compare50/execute.php');
 
 use \mod_evalcode\output\grading_app;
 
@@ -4301,7 +4303,8 @@ class evalcode
      */
     protected function process_grading_batch_operation(& $mform,&$notices)
     {
-        global $CFG;
+        global $CFG, $DB;
+
         require_once($CFG->dirroot . '/mod/evalcode/gradingbatchoperationsform.php');
         require_sesskey();
         $markingallocation = $this->get_instance()->markingworkflow &&
@@ -4347,31 +4350,99 @@ class evalcode
                     return 'plugingradingbatchoperation';
                 }
             }
+            if($data->operation == 'runcompare'){
+                //Create the local in case we use the compare50 option 
+                //PRUEBA
+                $fecha = new DateTime();
+                $path = '/var/www/moodledata/temp/filestorage/plagiarism/' . $fecha->getTimestamp() . '/';
+                if (!file_exists($path)) {
+                    mkdir($path, 0777, true);
+                }	
+                /*PARTE CODIGO PROFESOR , TODAVIA NO
+                try {
+                    //Download from the db the files provided by the professor
+                    $files = $fs->get_area_files($context->id, 'mod_evalcode', EVALCODE_INTROATTACHMENT_JUNIT);
+                    //Get the files
+                    if(array_key_exists(1,array_values($files))){
+                        $f = array_values($files)[1];
+                        $fileName = $f->get_filename();
+                        $contents = $f->get_content();
+                        file_put_contents($fileName, $contents);
+                        $this->unZipFile($fileName,$path,$notices);
+                        //Delete the .zip
+                        unlink($fileName);
+                    }
+                } catch (Exception $e) {
+                    //No files provided by the professor
+                }*/
+                foreach($userlist as $userid) {
+                    $user = $DB->get_record('user', array('id' => $userid), '*', MUST_EXIST);
+                    error_log("NOMBRE ALUMNO: ".fullname($user)."\n", 3, "/var/www/moodledata/temp/filestorage/evalcode.log");
+                    $userPath=$path.'/'.fullname($user);
+                    mkdir($userPath);
+                    //Set the current path to this one created
+                    chdir($userPath);
+                    //Download all the required files into that directory:
+                    $fs = get_file_storage();
+                    $context = $this->get_context();
+                    //Download from de db the user submission files
+                    $submission = $this->get_user_submission($userid, false);
+                
+                    $files = $fs->get_area_files($context->id, 'evalsubmission_file', EVALSUBMISSION_FILE_FILEAREA, $submission->id);
 
+                    //If the submission is empty stays in the submission page and shows a messagge
+                    if (sizeof(array_values($files))==1)
+                    {   
+                        //return false;
+                        //AQUI SE NECESITA UN ERROR O PASAR DE ESE ALUMNO
+                    }
+                    //SI UN ALUMNO NO TIENE FICHEROS EXCEPCION
+                    //Take from the second value of the submission (the zip archive)
+                    //  get_area_files returns all the submission files and a "." in [0]
+                    $f = array_values($files)[1];
+                    $fileName = $f->get_filename();
+                    $contents = $f->get_content();
+                    file_put_contents($fileName, $contents);
+
+                    //If it is a .zip file we call the function unZipFile
+                    if(substr(strrchr($fileName,'.'),1)=="zip"){
+                        $this->unZipFile($fileName, $userPath, $notices);
+                        
+                        //Delete the .zip
+                        unlink($fileName);
+                    }
+                }
+                executeCompare($path);
+            }
+            
             if ($data->operation == 'downloadselected') {
                 $this->download_submissions($userlist);
-            } else {
+                echo $userlist;
+            }else{
                 foreach ($userlist as $userid) {
                     if ($data->operation == 'lock') {
                         $this->process_lock_submission($userid);
                     } else if ($data->operation == 'unlock') {
                         $this->process_unlock_submission($userid);
                     } else if ($data->operation == 'runevalcode') {
+                        //prepareFiles y executeJunitTest estan en JavaConfig, mirar a ver como hacerlo funcionar
                         $packageData = $this->prepareFiles($userid,$notices);
                         if ($packageData["name"] != "") {
                             $this->executeJunitTest($userid, $packageData, true);
                         } else {
                             // echo "No files uploaded for this user.";
                         }
-
+                    } else if($data->operation == 'runcompare'){
+                        //PRUEBA
+                        
                     } else if ($data->operation == 'reverttodraft') {
                         $this->process_revert_to_draft($userid);
                     } else if ($data->operation == 'addattempt') {
                         if (!$this->get_instance()->teamsubmission) {
-                            $this->process_add_attempt($userid);
+                           $this->process_add_attempt($userid);
                         }
-                    }
-                }
+                   }
+                }    
             }
             if ($this->get_instance()->teamsubmission && $data->operation == 'addattempt') {
                 // This needs to be handled separately so that each team submission is only re-opened one time.
@@ -6940,7 +7011,7 @@ class evalcode
                         //Delete the .zip
                         unlink($fileName);
                     }
-
+                    /*
                     //If it is a .rar file we call the function unZipFile
                     if(substr(strrchr($fileName,'.'),1)=="rar"){
                         $this->unRarFile($fileName, $path, $notices);
@@ -6948,7 +7019,7 @@ class evalcode
                         //Delete the .zip
                         //unlink($fileName);
 
-                    }
+                    }*/
 
 		            try {
                         //Download from the db the files provided by the professor
@@ -6971,9 +7042,7 @@ class evalcode
                     $rdata = new stdClass();
                     try {
                         $result = $evaluatefunc($path,$rdata,$tool->additional_params);
-                        //PRUEBA
                         $tool->grade=$result->grade;
-                        //PRUEBA
                         //Calculate abd save the grade
                         $auxGrade = $auxGrade+($result->grade * (intval($tool->percentage)/100));
                         //save the feedback
