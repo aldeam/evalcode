@@ -96,9 +96,15 @@ class mod_evalcode_mod_form extends moodleform_mod
         $mform->addElement('filemanager', 'introattachmentsjunit',
             'Evaluation Files',
             null, array('subdirs' => 0, 'maxbytes' => $COURSE->maxbytes));
+            
+        //Plagiarism teacher files
+        $mform->addElement('filemanager', 'plagiarismteacherfiles',
+            'Files for plagiarism tool',
+            null, array('subdirs' => 0, 'maxbytes' => $COURSE->maxbytes));
 
         $mform->addHelpButton('introattachments', 'introattachments', 'evalcode');
         $mform->addHelpButton('introattachmentsjunit', 'introattachmentsjunit', 'evalcode');
+        $mform->addHelpButton('plagiarismteacherfiles', 'plagiarismteacherfiles', 'evalcode');
 
         $ctx = null;
         if ($this->current && $this->current->coursemodule) {
@@ -278,6 +284,11 @@ class mod_evalcode_mod_form extends moodleform_mod
         file_prepare_draft_area($draftitemid, $ctx->id, 'mod_evalcode', EVALCODE_INTROATTACHMENT_JUNIT,
             0, array('subdirs' => 0));
         $defaultvalues['introattachmentsjunit'] = $draftitemid;
+        
+        $draftitemid = file_get_submitted_draft_itemid('plagiarismteacherfiles');
+        file_prepare_draft_area($draftitemid, $ctx->id, 'mod_evalcode', EVALCODE_PLAGIARISM_FILEAREA,
+            0, array('subdirs' => 0));
+        $defaultvalues['plagiarismteacherfiles'] = $draftitemid;
 
         $evalcodeframework->plugin_data_preprocessing($defaultvalues);
     }

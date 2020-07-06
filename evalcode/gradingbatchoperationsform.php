@@ -35,7 +35,8 @@ require_once($CFG->dirroot . '/mod/evalcode/locallib.php');
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class mod_evalcode_grading_batch_operations_form extends moodleform {
-    /**
+	
+	/**
      * Define this form - called by the parent constructor.
      */
     public function definition() {
@@ -46,11 +47,9 @@ class mod_evalcode_grading_batch_operations_form extends moodleform {
         $options = array();
 
         $options['runevalcode'] = get_string('runevalcode', 'evalcode');
-        //$options['runcompare'] = 'Run Compare50';
-        $options['runcompare'] = get_string('runcompare', 'evalcode');
+		$options['runcompare'] = get_string('runcompare', 'evalcode');
 
-
-        $mform->addElement('hidden', 'action', 'gradingbatchoperation');
+		$mform->addElement('hidden', 'action', 'gradingbatchoperation');
         $mform->setType('action', PARAM_ALPHA);
         $mform->addElement('hidden', 'id', $instance['cm']);
         $mform->setType('id', PARAM_INT);
@@ -58,12 +57,15 @@ class mod_evalcode_grading_batch_operations_form extends moodleform {
         $mform->setType('selectedusers', PARAM_SEQUENCE);
         $mform->addElement('hidden', 'returnaction', 'grading');
         $mform->setType('returnaction', PARAM_ALPHA);
-
+        
+        
+        
         $objs = array();
         $objs[] =& $mform->createElement('select', 'operation', get_string('chooseoperation', 'evalcode'), $options);
         $objs[] =& $mform->createElement('submit', 'submit', get_string('go'));
         $batchdescription = get_string('batchoperationsdescription', 'evalcode');
         $mform->addElement('group', 'actionsgrp', $batchdescription, $objs, ' ', false);
-    }
+        
+        }
 }
 

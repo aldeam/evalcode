@@ -1230,7 +1230,9 @@ function evalcode_get_file_areas($course, $cm, $context) {
     $areas = array(
         EVALCODE_INTROATTACHMENT_FILEAREA => get_string('introattachments', 'mod_evalcode'),
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        EVALCODE_INTROATTACHMENT_JUNIT => get_string('introattachmentsjunit', 'mod_evalcode')
+        EVALCODE_INTROATTACHMENT_JUNIT => get_string('introattachmentsjunit', 'mod_evalcode'),
+        
+        EVALCODE_PLAGIARISM_FILEAREA => get_string('plagiarismteacherfiles', 'mod_evalcode')
     );
 
     $evalcodeframework = new evalcode($context, $cm, $course);
@@ -1316,6 +1318,27 @@ function evalcode_get_file_info($browser,
 
     /////////////////////////////////////////////////////////////////////////////////////////////////
     if ($filearea === EVALCODE_INTROATTACHMENT_JUNIT) {
+        if (!has_capability('moodle/course:managefiles', $context)) {
+            // Students can not peak here!
+            return null;
+        }
+        if (!($storedfile = $fs->get_file($evalcodeframework->get_context()->id,
+                                          'mod_evalcode', $filearea, 0, $filepath, $filename))) {
+            return null;
+        }
+        return new file_info_stored($browser,
+                        $evalcodeframework->get_context(),
+                        $storedfile,
+                        $urlbase,
+                        $filearea,
+                        $itemid,
+                        true,
+                        true,
+                        false);
+    }
+    
+    /////////////////////////////////////////////////////////////////////////////////////////////////
+    if ($filearea === EVALCODE_PLAGIARISM_FILEAREA) {
         if (!has_capability('moodle/course:managefiles', $context)) {
             // Students can not peak here!
             return null;

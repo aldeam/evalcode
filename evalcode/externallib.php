@@ -483,7 +483,22 @@ class mod_evalcode_external extends external_api {
                             }
                         }
                         $evalcodeframeworkarray[] = $evalcodeframework;
+						/////////////////////////////////////////////////////////////////////
+                       if ($files = $fs->get_area_files($context->id, 'mod_evalcode', EVALCODE_PLAGIARISM_FILEAREA,
+                                                            0, 'timemodified', false)) {
 
+                            $evalcodeframework['plagiarismteacherfiles'] = array();
+                            foreach ($files as $file) {
+                                $filename = $file->get_filename();
+                                $evalcodeframework['plagiarismteacherfiles'][] = array(
+                                    'filename' => $filename,
+                                    'mimetype' => $file->get_mimetype(),
+                                    'fileurl'  => moodle_url::make_webservice_pluginfile_url(
+                                        $context->id, 'mod_evalcode', EVALCODE_PLAGIARISM_FILEAREA, 0, '/', $filename)->out(false)
+                                );
+                            }
+                        }
+                        $evalcodeframeworkarray[] = $evalcodeframework;
                     }
 
 

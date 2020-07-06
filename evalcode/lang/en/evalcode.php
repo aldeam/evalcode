@@ -95,8 +95,8 @@ $string['batchoperationconfirmsetmarkingworkflowstate'] = 'Set marking workflow 
 $string['batchoperationconfirmsetmarkingallocation'] = 'Set marking allocation for all selected submissions?';
 $string['batchoperationconfirmdownloadselected'] = 'Download selected submissions?';
 $string['batchoperationconfirmrunevalcode'] = 'Run auto eval code in selected submissions?';
-#PRUEBA
-$string['batchoperationconfirmruncompare'] = 'Run compare50 with selected submissions?';
+#EN PRUEBAS
+$string['batchoperationconfirmruncompare'] = 'Run compare50 with selected submissions? <br> Remember that you can upload teacher files in edit task';
 $string['batchoperationlock'] = 'lock submissions';
 $string['batchoperationunlock'] = 'unlock submissions';
 $string['batchoperationreverttodraft'] = 'revert submissions to draft';
@@ -144,7 +144,6 @@ $string['download all submissions'] = 'Download all submissions in a zip file.';
 $string['downloadselectedsubmissions'] = 'Download selected submissions';
 $string['runevalcode'] = 'Run evalcode';
 $string['runcompare'] = 'Run Compare50';
-#PRUEBA
 $string['duedate'] = 'Due date';
 $string['duedatecolon'] = 'Due date: {$a}';
 $string['duedate_help'] = 'This is when the evalcodeframework is due. Submissions will still be allowed after this date but any evalcodeframeworks submitted after this date are marked as late. To prevent submissions after a certain date - set the evalcodeframework cut off date.';
@@ -255,8 +254,10 @@ $string['hiddenuser'] = 'Participant ';
 $string['instructionfiles'] = 'Instruction files';
 $string['introattachments'] = 'Additional files';
 $string['introattachmentsjunit'] = 'Junit files';
+$string['plagiarismteacherfiles'] = 'Files for plagiarism tool';
 $string['introattachments_help'] = 'Additional files for use in the evalcodeframework, such as answer templates, may be added. Download links for the files will then be displayed on the evalcodeframework page under the description.';
 $string['introattachmentsjunit_help'] = 'Additional files for use in the evalcodeframework, such as answer templates, may be added. Download links for the files will then be displayed on the evalcodeframework page under the description.';
+$string['plagiarismteacherfiles_help'] = 'Additional files to use when the plagiarism tool, compare50, is executed. The tool will ignore this files to compare between the students submissions.';
 $string['invalidgradeforscale'] = 'The grade supplied was not valid for the current scale';
 $string['invalidfloatforgrade'] = 'The grade provided could not be understood: {$a}';
 $string['lastmodifiedsubmission'] = 'Last modified (submission)';

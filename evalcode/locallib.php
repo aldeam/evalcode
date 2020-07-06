@@ -64,6 +64,7 @@ define('EVALCODE_MARKING_WORKFLOW_STATE_RELEASED', 'released');
 // Name of file area for intro attachments.
 define('EVALCODE_INTROATTACHMENT_FILEAREA', 'introattachment');
 define('EVALCODE_INTROATTACHMENT_JUNIT', 'introattachmentjunit');
+define('EVALCODE_PLAGIARISM_FILEAREA', 'plagiarismteacherfiles');
 
 //Location of the error_log file
 define('EVALCODE_LOG_FILE', '/var/www/moodledata/temp/filestorage/evalcode.log');
@@ -171,7 +172,6 @@ class evalcode
     private $sharedgroupmembers = array();
 
     private $tempPath = "";
-    
     
 
     /**
@@ -1224,6 +1224,11 @@ class evalcode
         }
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
+        
+        if (isset($formdata->plagiarismteacherfiles)) {
+            file_save_draft_area_files($formdata->plagiarismteacherfiles, $this->get_context()->id,
+                'mod_evalcode', EVALCODE_PLAGIARISM_FILEAREA, 0);
+        }
     }
 
     /**
@@ -1275,7 +1280,7 @@ class evalcode
             }
             $mform->setDefault($plugin->get_subtype() . '_' . $plugin->get_type() . '_enabled', $default);
             
-            //We will leave disabled by default the option Feedback Types -> Feedback Files FINNALY NOT USED
+            //We will leave disabled by default the option Feedback Types -> Feedback Files FINALLY NOT USED
          /*   if($plugin->get_subtype()=='evalfeedback'){
                 if($plugin->get_type()=='file'){
                     $mform->setDefault($plugin->get_subtype() . '_' . $plugin->get_type() . '_enabled', 0);
@@ -3817,6 +3822,7 @@ class evalcode
         require_once($CFG->dirroot . '/mod/evalcode/gradingoptionsform.php');
         require_once($CFG->dirroot . '/mod/evalcode/quickgradingform.php');
         require_once($CFG->dirroot . '/mod/evalcode/gradingbatchoperationsform.php');
+        
         $o = '';
         $cmid = $this->get_course_module()->id;
 
@@ -4306,6 +4312,7 @@ class evalcode
         global $CFG, $DB;
 
         require_once($CFG->dirroot . '/mod/evalcode/gradingbatchoperationsform.php');
+        require_once($CFG->libdir. '/moodlelib.php');
         require_sesskey();
         $markingallocation = $this->get_instance()->markingworkflow &&
             $this->get_instance()->markingallocation &&
@@ -4358,30 +4365,42 @@ class evalcode
                 if (!file_exists($path)) {
                     mkdir($path, 0777, true);
                 }	
-                /*PARTE CODIGO PROFESOR , TODAVIA NO
-                try {
+
+                chdir($path);
+
+                $teacherfilespath = $path.'files/'; 
+
+                 //PARTE ARCHIVOS PROFESOR Tiene que ser un zip
+                 try {
+                    //Download all the required files into that directory:
+                    $fs = get_file_storage();
+                    $context = $this->get_context();
                     //Download from the db the files provided by the professor
-                    $files = $fs->get_area_files($context->id, 'mod_evalcode', EVALCODE_INTROATTACHMENT_JUNIT);
+                    $files = $fs->get_area_files($context->id, 'mod_evalcode', EVALCODE_PLAGIARISM_FILEAREA);
+                    error_log("PARTE ARCHIVOS PROFESOR: \n", 3, "/var/www/moodledata/temp/filestorage/evalcode.log");
                     //Get the files
                     if(array_key_exists(1,array_values($files))){
                         $f = array_values($files)[1];
                         $fileName = $f->get_filename();
                         $contents = $f->get_content();
                         file_put_contents($fileName, $contents);
-                        $this->unZipFile($fileName,$path,$notices);
+                        $this->unZipFile($fileName,$teacherfilespath,$notices);
                         //Delete the .zip
                         unlink($fileName);
                     }
                 } catch (Exception $e) {
                     //No files provided by the professor
-                }*/
+                }
+
+                $path=$path.'submissions/';
+
+                mkdir($path);
+
+
                 foreach($userlist as $userid) {
                     $user = $DB->get_record('user', array('id' => $userid), '*', MUST_EXIST);
                     error_log("NOMBRE ALUMNO: ".fullname($user)."\n", 3, "/var/www/moodledata/temp/filestorage/evalcode.log");
-                    $userPath=$path.'/'.fullname($user);
-                    mkdir($userPath);
-                    //Set the current path to this one created
-                    chdir($userPath);
+                   
                     //Download all the required files into that directory:
                     $fs = get_file_storage();
                     $context = $this->get_context();
@@ -4390,26 +4409,30 @@ class evalcode
                 
                     $files = $fs->get_area_files($context->id, 'evalsubmission_file', EVALSUBMISSION_FILE_FILEAREA, $submission->id);
 
-                    //If the submission is empty stays in the submission page and shows a messagge
-                    if (sizeof(array_values($files))==1)
+                    //Checks if the submission is empty (Aqui es distinto a la entrega de process_save_submission donde el array no hay entrega tiene tamaño 1)
+                    if (sizeof(array_values($files))!=0)
                     {   
-                        //return false;
-                        //AQUI SE NECESITA UN ERROR O PASAR DE ESE ALUMNO
-                    }
-                    //SI UN ALUMNO NO TIENE FICHEROS EXCEPCION
-                    //Take from the second value of the submission (the zip archive)
-                    //  get_area_files returns all the submission files and a "." in [0]
-                    $f = array_values($files)[1];
-                    $fileName = $f->get_filename();
-                    $contents = $f->get_content();
-                    file_put_contents($fileName, $contents);
+                        //SI UN ALUMNO NO TIENE FICHEROS EXCEPCION
+                        $userPath=$path.'/'.fullname($user);
+                        mkdir($userPath);
 
-                    //If it is a .zip file we call the function unZipFile
-                    if(substr(strrchr($fileName,'.'),1)=="zip"){
-                        $this->unZipFile($fileName, $userPath, $notices);
-                        
-                        //Delete the .zip
-                        unlink($fileName);
+                        //Set the current path to this one created
+                        chdir($userPath);
+
+                        //Take from the second value of the submission (the zip archive)
+                        //  get_area_files returns all the submission files and a "." in [0]
+                        $f = array_values($files)[1];
+                        $fileName = $f->get_filename();
+                        $contents = $f->get_content();
+                        file_put_contents($fileName, $contents);
+
+                        //If it is a .zip file we call the function unZipFile
+                        if(substr(strrchr($fileName,'.'),1)=="zip"){
+                            $this->unZipFile($fileName, $userPath, $notices);
+                            
+                            //Delete the .zip
+                            unlink($fileName);
+                        }
                     }
                 }
                 executeCompare($path);
@@ -4432,9 +4455,6 @@ class evalcode
                         } else {
                             // echo "No files uploaded for this user.";
                         }
-                    } else if($data->operation == 'runcompare'){
-                        //PRUEBA
-                        
                     } else if ($data->operation == 'reverttodraft') {
                         $this->process_revert_to_draft($userid);
                     } else if ($data->operation == 'addattempt') {
@@ -7096,6 +7116,7 @@ class evalcode
             );
 
             $file = $fs->create_file_from_string($dummy,$feedback);
+            
         
             //We display a table with a resume of the results obtained in each tool 
             if(sizeof($toolslist)==0){

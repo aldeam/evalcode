@@ -2,29 +2,49 @@
 
 //File that contains the secure_exec function to operate in a sandbox with the submmited files
 require_once('/var/www/html/moodle/mod/evalcode/tools/secure_exec.php'); 
-ini_set("display_errors", 1);
-ini_set("track_errors", 1);
-ini_set("html_errors", 1);
-error_reporting(E_ALL);
 
 /**
  * This file contains the function executeCompare
  */
 
  /**
- * This is the function that is called when is going to be operations with files submitted by
- * the students and makes the execution secure within a sandbox called firejail
- * @param $command is the original command that is to be executed in the sandbox
+ * This is the function that is called to execute the plagiarism tool compare50 and return it 
+ * in a forced download
+ * @param $path path to the students files folder
  * 
- * @return $ the output of the command without the firejail output
  */
 
 function executeCompare($path) {
    chdir($path);
-   $command="compare50 * -x '*' -i'*.c' -n 15 2>&1";
+   //$command="compare50 * -x '*' -i'*.c' -n 15 2>&1";
+   $command="compare50 ./** -d ../files/** -n 15";
    $result = secure_exec($command);
    error_log("SALIDA COMPARE50: ".$result."\n", 3, "/var/www/moodledata/temp/filestorage/evalcode.log");
-}
+   
+   //We compress the results folder
+   shell_exec('zip -r results.zip results');
 
+   //We force a download to return the result
+
+   $file = "results.zip"; //Name of the file to look for
+   $filename = "Compare50Results.zip";	//Name of the file in the download
+   $filepath = $path .'/'. $file;
+
+   // Process download
+
+   if(file_exists($filepath)) {
+      ob_start();
+
+      header("Content-type: application/force-download");
+      header('Content-Disposition: attachment; filename="'.$filename.'"');	
+      header('Content-Length: ' . filesize($filepath));	
+      
+      while (ob_get_level()) {
+         ob_end_clean();
+      }
+
+      readfile($filepath);	 
+   }
+}
 
 ?>
