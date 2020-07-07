@@ -16,8 +16,8 @@ require_once('/var/www/html/moodle/mod/evalcode/tools/secure_exec.php');
 
 function executeCompare($path) {
    chdir($path);
-   //$command="compare50 * -x '*' -i'*.c' -n 15 2>&1";
-   $command="compare50 ./** -d ../files/** -n 15";
+   chdir('..');
+   $command="compare50 ./submissions/* -d files/ -n 15";
    $result = secure_exec($command);
    error_log("SALIDA COMPARE50: ".$result."\n", 3, "/var/www/moodledata/temp/filestorage/evalcode.log");
    
@@ -28,7 +28,7 @@ function executeCompare($path) {
 
    $file = "results.zip"; //Name of the file to look for
    $filename = "Compare50Results.zip";	//Name of the file in the download
-   $filepath = $path .'/'. $file;
+   $filepath = $path .'/../'. $file;
 
    // Process download
 

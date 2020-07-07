@@ -4358,8 +4358,8 @@ class evalcode
                 }
             }
             if($data->operation == 'runcompare'){
-                //Create the local in case we use the compare50 option 
-                //PRUEBA
+                //Run compare50 selected
+                //We create a folder to do the operations
                 $fecha = new DateTime();
                 $path = '/var/www/moodledata/temp/filestorage/plagiarism/' . $fecha->getTimestamp() . '/';
                 if (!file_exists($path)) {
@@ -4370,7 +4370,7 @@ class evalcode
 
                 $teacherfilespath = $path.'files/'; 
 
-                 //PARTE ARCHIVOS PROFESOR Tiene que ser un zip
+                 //We download the teacher files, if there are, in a folder named files
                  try {
                     //Download all the required files into that directory:
                     $fs = get_file_storage();
@@ -4391,12 +4391,12 @@ class evalcode
                 } catch (Exception $e) {
                     //No files provided by the professor
                 }
-
+                //The students submissions will go in a folder named submissions
                 $path=$path.'submissions/';
 
                 mkdir($path);
 
-
+                //We loop through the students array 
                 foreach($userlist as $userid) {
                     $user = $DB->get_record('user', array('id' => $userid), '*', MUST_EXIST);
                     error_log("NOMBRE ALUMNO: ".fullname($user)."\n", 3, "/var/www/moodledata/temp/filestorage/evalcode.log");
@@ -4410,6 +4410,7 @@ class evalcode
                     $files = $fs->get_area_files($context->id, 'evalsubmission_file', EVALSUBMISSION_FILE_FILEAREA, $submission->id);
 
                     //Checks if the submission is empty (Aqui es distinto a la entrega de process_save_submission donde el array no hay entrega tiene tamaño 1)
+                    //If it is empty we just ignore that student
                     if (sizeof(array_values($files))!=0)
                     {   
                         //SI UN ALUMNO NO TIENE FICHEROS EXCEPCION
@@ -6895,7 +6896,7 @@ class evalcode
     }
 
     /**
-     * Unrars fileName in specific path NOT WORKING
+     * Unrars fileName in specific path NOT WORKING MEJORA POSIBLE
      * @param fileName $fileName with the name of the desired file to unrar
      * @param path Objective $path for the final files
      * @return list with the files extracted
@@ -6974,8 +6975,7 @@ class evalcode
                 //Create the local directory for the tool to work with
                 $fecha = new DateTime();
                 $path = '/var/www/moodledata/temp/filestorage/' . $userid . '_' . $fecha->getTimestamp() . '/';
-                //PRUEBA
-                //$path = '/var/www/moodledata/temp/filestorage/' . $userid . '_' . 'PRUEBA/';
+               
                 if (!file_exists($path)) {
                     mkdir($path, 0777, true);
                 }
@@ -7032,7 +7032,7 @@ class evalcode
                         unlink($fileName);
                     }
                     /*
-                    //If it is a .rar file we call the function unZipFile
+                    //If it is a .rar file we call the function unRarFile, Not working, posible upgrade
                     if(substr(strrchr($fileName,'.'),1)=="rar"){
                         $this->unRarFile($fileName, $path, $notices);
                          
