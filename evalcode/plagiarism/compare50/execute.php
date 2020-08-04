@@ -17,7 +17,14 @@ require_once('/var/www/html/moodle/mod/evalcode/tools/secure_exec.php');
 function executeCompare($path) {
    chdir($path);
    chdir('..');
-   $command="compare50 ./submissions/* -d files/ -n 15";
+
+   //If the teacher has given any files we execute the command with the -d flag
+   if (file_exists('files/')){
+      $command="compare50 ./submissions/* -d files/ -n 15"; 
+   }else{
+      $command="compare50 ./submissions/* -n 15"; 
+   }
+
    $result = secure_exec($command);
    error_log("SALIDA COMPARE50: ".$result."\n", 3, "/var/www/moodledata/temp/filestorage/evalcode.log");
    

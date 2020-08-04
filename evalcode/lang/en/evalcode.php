@@ -95,8 +95,7 @@ $string['batchoperationconfirmsetmarkingworkflowstate'] = 'Set marking workflow 
 $string['batchoperationconfirmsetmarkingallocation'] = 'Set marking allocation for all selected submissions?';
 $string['batchoperationconfirmdownloadselected'] = 'Download selected submissions?';
 $string['batchoperationconfirmrunevalcode'] = 'Run auto eval code in selected submissions?';
-#EN PRUEBAS
-$string['batchoperationconfirmruncompare'] = 'Run compare50 with selected submissions? <br> Remember that you can upload teacher files in edit task';
+$string['batchoperationconfirmruncompare'] = 'Run compare50 with selected submissions? Remember that you can upload teacher files in edit task.';
 $string['batchoperationlock'] = 'lock submissions';
 $string['batchoperationunlock'] = 'unlock submissions';
 $string['batchoperationreverttodraft'] = 'revert submissions to draft';
