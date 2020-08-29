@@ -8,7 +8,7 @@ $languageTool = new \stdClass();
 //Name for the tool, must be the same as the folder and without blank spaces
 $languageTool->name = 'JUnit';
 //Specify the current version of the tool
-$languageTool->version = '4.2';
+$languageTool->version = '5';
 //Code language that the tool evaluates, must be the same as the language folder name and only one
 $languageTool->language = 'Java';
 //Description for the tool

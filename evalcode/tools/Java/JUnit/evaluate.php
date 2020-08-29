@@ -27,20 +27,12 @@ $evaluatefunc = function ($path,$returndata,$additionalParams){
   
     shell_exec('find * -name "*.java" > sources_list.txt');
 
-    $testClassFileName = shell_exec('grep -n "Test" '.$path.'sources_list.txt');
-    /*
-    $tmp = explode(":", $testClassFileName);
-    $testClassFileName = end($tmp);
-    $testClassFileName = str_replace(".java", "", $testClassFileName);
-    $testClassFileName = str_replace("/", ".", $testClassFileName);
-    */
-
-    $contents = file_get_contents('sources_list.txt');
+    //$contents = file_get_contents('sources_list.txt');
 
     //En la compilacion se añaden al classpath todas las librerias externas que haya en /var/www/
     shell_exec('mkdir out');
     $comand2 = 'javac -d '.$path.'out -Xlint:unchecked -encoding UTF-8 -cp .:/var/www/* @sources_list.txt 2>&1';
-    $salida = shell_exec($comand2);
+    $salida = secure_exec($comand2);
     error_log("Junit: ".$salida."\n", 3, "/var/www/moodledata/temp/filestorage/evalcode.log");
     if(strpos($salida,'error') || strpos($salida,'errors')){
         $returndata->grade = 0;
@@ -57,9 +49,7 @@ $evaluatefunc = function ($path,$returndata,$additionalParams){
 
     $feedback= shell_exec('ansi2html --white < feedback.log');
     
-    error_log("Junit: ".$feedback."\n", 3, "/var/www/moodledata/temp/filestorage/evalcode.log");
-    $result = [];
-
+    //error_log("Junit: ".$feedback."\n", 3, "/var/www/moodledata/temp/filestorage/evalcode.log");
     
     $countTotalTest="";
     $countSuccesfullTest="";

@@ -6933,6 +6933,7 @@ class evalcode
     protected function process_save_submission(&$mform, &$notices)
     {
         global $CFG,$DB,$USER;
+        $antes=microtime(true);
         //error_log ("usuario: ".$USER->id."\n",3,EVALCODE_LOG_FILE);
 		$instance = $this->get_instance();
         $record = $DB->get_record('evalcode',array('id' => $instance->id),$fields='*',IGNORE_MISSING);
@@ -7177,6 +7178,8 @@ class evalcode
 
         $this->apply_grade_to_user($data, $userid, $data->attemptnumber);
         $this->process_outcomes($userid, $data);
+        $despues=microtime(true);
+        error_log("Tiempo de ejecución: ".($despues-$antes)." (s)\n", 3, "/var/www/moodledata/temp/filestorage/evalcode.log");
         return TRUE;
     }
 
