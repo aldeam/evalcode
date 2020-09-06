@@ -28,7 +28,7 @@ $evaluatefunc = function ($path,$returndata,$additionalParams){
     $contents = file_get_contents('sources_list.txt');
     error_log("ARCHIVO: ".$contents."\n", 3, "/var/www/moodledata/temp/filestorage/evalcode.log");
     //It only takes the first file. Only working for 1 file
-    $salida = shell_exec('style50 -o score '.$contents);
+    $salida = secure_exec('style50 -o score '.$contents);
     
     if(strpos($salida,'error') || strpos($salida,'errors')){
         $returndata->grade = 0;
